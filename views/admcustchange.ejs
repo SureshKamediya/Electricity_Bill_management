@@ -1,0 +1,125 @@
+<%- include('header') %>
+
+<% var pos1=0,i=0 %>
+<% function tocheck(admin){%>
+  <% if(admin.login_id == ans){%>
+      <%  pos1=i; %>
+  <% }%>
+  <% i++ %>
+<% } %>
+
+<% admins.forEach(tocheck); %>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand" href="#">
+      <img src="/docs/4.0/assets/brand/bootstrap-logo.svg" alt="" width="30" height="24" class="d-inline-block align-top">
+      <%=admins[pos1].admin_id%>
+  </a>
+  <div class="collapse navbar-collapse justify-content-end" id="navbarNav" >
+    <ul class="nav justify-content-center>
+      <li class="nav-item">
+        <script>
+          var val = <%=admins[pos1].login_id%>;
+          var loc="/admin"+val;
+          document.write('<a class="nav-link" href="' + loc + '">Home</a>');
+        </script>
+      </li>
+      <li class="nav-item">
+        <script>
+          var val = <%=admins[pos1].login_id%>;
+          var loc="/adm"+val;
+          document.write('<a class="nav-link" href="' + loc + '">My Profile</a>');
+        </script>
+      </li>
+      <li class="nav-item">
+        <script>
+          var val = <%=admins[pos1].login_id%>;
+          var loc="/all"+val;
+          document.write('<a class="nav-link" href="' + loc + '">All Feedbacks</a>');
+        </script>
+      </li>
+      <li class="nav-item">
+        <script>
+          var val = <%=admins[pos1].login_id%>;
+          var loc="/change"+val;
+          document.write('<a class="nav-link" href="' + loc + '">All bills</a>');
+        </script>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link active" aria-current="page" href="/loginadmin">Log Out</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<% var vals=0; %>
+  <% function myfunction(customer){%>
+    <form action="/admcustchange" method="POST">
+      <% var pos=0,j=0 %>
+      <% function tocheck2(bill){%>
+        <% if(bill.cust_id == customer.cust_id){%>
+            <%  pos=j; %>
+        <% }%>
+        <% j=j+1; %>
+      <% }; %>
+      <% bills.forEach(tocheck2); %>
+      <input type="hidden" name="cust_id" value="<%=customer.cust_id%>">
+      <input type="hidden" name="mobile" value="<%=admins[pos1].login_id%>">
+       <tr>
+        <th scope="row"><%=customer.cust_id%></th>
+        <td>
+          <label for="unit_used"><%=bills[pos].unit_used%></label>
+          <input type="text"  name="unit_used" required >
+        </td>
+        <td>
+          <label for="current_bill"><%=bills[pos].current_bill%></label>
+          <input type="text"  name="current_bill" required >
+        </td>
+        <td>
+          <label for="bill_due"><%=bills[pos].bill_due%></label>
+          <input type="text"  name="bill_due" required >
+        </td>
+        <td>
+          <label for="total_bill"><%=bills[pos].total_bill%></label>
+          <input type="text"  name="total_bill" required >
+        </td>
+        <td>
+          <button type="submit" class="btn btn-primary">Change</button>
+        </td>
+      </tr>
+    </form>
+  <% }; %>
+
+
+<div>
+  <h1 class="colour">All bills</h1>
+  <table class="table table-hover table-dark">
+    <thead class="thead-dark">
+      <tr>
+        <th scope="col">Customer Id</th>
+        <th scope="col">Unit Used</th>
+        <th scope="col">Current Bill</th>
+        <th scope="col">Bill Due</th>
+        <th scope="col">Total Bill</th>
+        <th scope="col"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% customers.forEach(myfunction);%>
+    </tbody>
+  </table>
+
+</div>
+
+
+<!-- <div class="card text-white bg-secondary mb-3 box4 text-center" style="max-width: 20rem;">
+  <div class="card-header">Total Bill</div>
+  <div class="card-body">
+    <h5 class="card-title">Secondary card title</h5>
+    <a href="#" class="btn btn-primary">Pay</a>
+  </div>
+</div> -->
+
+
+<%- include('footer') %>

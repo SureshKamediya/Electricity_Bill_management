@@ -1,5 +1,14 @@
 <%- include('header') %>
 
+<% var pos=0,i=0 %>
+<% bills.forEach(tocheck); %>
+<% function tocheck(bill){%>
+  <% if(bill.cust_id == customer.cust_id){%>
+      <%  pos=i; %>
+  <% }%>
+  <% i=i+1; %>
+<% }; %>
+
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
   <a class="navbar-brand" href="#">
       <img src="/docs/4.0/assets/brand/bootstrap-logo.svg" alt="" width="30" height="24" class="d-inline-block align-top">
@@ -8,8 +17,13 @@
   <div class="collapse navbar-collapse justify-content-end" id="navbarNav" >
     <ul class="nav justify-content-center>
       <li class="nav-item">
-        <a class="nav-link active" aria-current="page" href="#">Home</a>
+        <script>
+          var val = <%=customer.mobile_no%>;
+          var loc="/customer"+val;
+          document.write('<a class="nav-link" href="' + loc + '">Home</a>');
+        </script>
       </li>
+
       <li class="nav-item">
         <script>
           var val = <%=customer.mobile_no%>;
@@ -18,17 +32,65 @@
         </script>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="/feedback.ejs">Feedback</a>
+        <script>
+          var val = <%=customer.mobile_no%>;
+          var loc="/feed"+val;
+          document.write('<a class="nav-link" href="' + loc + '">Feedback</a>');
+        </script>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="/resetpass.ejs">Reset Password</a>
+        <script>
+          var val = <%=customer.mobile_no%>;
+          var loc="/reset"+val;
+          document.write('<a class="nav-link" href="' + loc + '">Reset Password</a>');
+        </script>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link active" aria-current="page" href="/logincustomer">Log Out</a>
       </li>
     </ul>
   </div>
 </nav>
 
 
-<div class="container">
+
+<div class="card cardb text-white  mb-3 box1" style="max-width: 15rem;">
+  <div class="card-header">Unit Used</div>
+  <div class="card-body">
+    <h5 class="card-title"><%=bills[pos].unit_used %></h5>
+  </div>
+</div>
+
+<div class="card cardb text-white  mb-3 box2" style="max-width: 15rem;">
+  <div class="card-header">Current Bill</div>
+  <div class="card-body">
+    <h5 class="card-title"><%=bills[pos].current_bill%></h5>
+  </div>
+</div>
+
+<div class="card cardb text-white  mb-3 box3" style="max-width: 15rem;">
+  <div class="card-header">Bill Due</div>
+  <div class="card-body">
+    <h5 class="card-title"><%=bills[pos].bill_due%></h5>
+  </div>
+</div>
+
+<div class="card cardb text-white  mb-3 box4 text-center" style="max-width: 18rem;">
+  <div class="card-header">Total Bill</div>
+  <div class="card-body">
+    <h5 class="card-title"><%=bills[pos].total_bill%></h5>
+    <script>
+      var val = <%=customer.mobile_no%>;
+      var loc="/lastpayment"+val;
+      document.write('<a class="btn btn-primary bdrad" href="' + loc + '">Pay</a>');
+    </script>
+  </div>
+</div>
+
+
+
+
+<!-- <div class="container">
 <div class="row">
 <table class="table table-dark">
 <thead>
@@ -40,24 +102,9 @@
 <th scope="col">Total Bill</th>
 </tr>
 </thead>
-</table>
+</table> -->
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<table class="table table-dark">
+<!-- <table class="table table-dark">
 <thead>
 <tr>
 <th scope="col">1323</th>
@@ -68,7 +115,7 @@
 </tr>
 </thead>
 </table>
-</div>
+</div> -->
 
 
 

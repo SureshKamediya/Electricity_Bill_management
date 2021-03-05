@@ -10,6 +10,7 @@ var con = mysql.createConnection({
   database : "elecdb"
 });
 
+
 const app = express();
 app.set("view engine", "ejs");
 
@@ -17,8 +18,9 @@ app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(express.static("public"));
 
-var customers_ = [];
+var customers = [];
 var admins = [];
+var bills = [];
 
 
 con.connect(function(err){
@@ -45,6 +47,7 @@ app.get("/register",function(req, res){
   res.render("register");
 });
 
+
 app.post("/",function(req, res){
    res.send("Its nothing");
 });
@@ -59,8 +62,24 @@ app.post("/register", function(req,res){
       console.log(err);
     }
     else{
-      let str = "customer"+ username;
-      res.redirect(str);
+      var customer_id = 0;
+      var sql23 ="select * from customer where mobile_no = \""+username+"\"";
+      con.query(sql23,function(err,result3){
+        if(err){
+          console.log(err);
+        }
+        else{
+          customer_id= result3[0].cust_id;
+          var sql20 = "insert into bill (cust_id, unit_used, current_bill, bill_due, total_bill) values("+customer_id+", 0, 0, 0, 0)";
+          con.query(sql20, function(err,result2){
+            if(err){
+              console.log(err);
+            }
+          });
+          let str = "customer"+ username;
+          res.redirect(str);
+        }
+      });
     }
   });
 });
@@ -136,28 +155,135 @@ app.post("/loginadmin", function(req,res){
    });
 });
 
+app.post("/feedback",function(req,res){
+  let username = req.body.mobile;
+  let today = new Date().toISOString().slice(0, 10);
+  var sql14 = "insert into feedback (cust_id,feedback,feedback_date) values("+req.body.cust_id+", \""+req.body.feedback+"\", \""+today+"\")";
+  con.query(sql14,function(err,result){
+     if(err){
+       console.log(err);
+     }
+     else{
+       let str = "customer"+ username;
+       res.redirect(str);
+     }
+   });
+
+});
+
+
+app.post("/resetpass",function(req,res){
+  let username = req.body.mobile;
+  let password = req.body.newpass;
+  let confirm_password = req.body.confirmpass;
+  if(password == confirm_password){
+    var sql15 = "update customer set password = \""+password+"\" where mobile_no = \""+username+"\"";
+    con.query(sql15,function(err,result){
+       if(err){
+         console.log(err);
+       }
+       else{
+         let str = "customer"+ username;
+         res.redirect(str);
+       }
+     });
+   }
+   else{
+     res.send("Confirm password doesn't matches with password");
+   }
+});
+
+app.post("/admcustchange",function(req,res){
+  let cust_id = req.body.cust_id;
+  let unit_used = req.body.unit_used;
+  let current_bill = req.body.current_bill;
+  let bill_due = req.body.bill_due;
+  let total_bill= req.body.total_bill;
+  var sql22 = "update bill set unit_used = "+unit_used+", current_bill = "+current_bill+", bill_due = "+bill_due+", total_bill = "+total_bill+" where bill.cust_id = "+cust_id;
+  con.query(sql22,function(err,result){
+    if(err){
+      console.log(err);
+    }
+    else{
+      let str ="change"+req.body.mobile;
+      res.redirect(str);
+    }
+  });
+});
+
+var sql16 = "select * from customer";
+con.query(sql16,function(err,result){
+  if(err){
+    console.log(err);
+  }
+  else{
+  customers = result;
+  }
+});
+
+var sql19 = "select * from admin";
+con.query(sql19,function(err,result){
+  if(err){
+    console.log(err);
+  }
+  else{
+  admins = result;
+  }
+});
+
+var sql21 = "select * from bill";
+con.query(sql21,function(err,result){
+  if(err){
+    console.log(err);
+  }
+  else{
+  bills = result;
+  }
+});
+
+
 app.get("/:topic",function(req, res){
   const id = req.params.topic;
   if(id.includes("admin",0)){
     var ans = id.substring(5);
+    var sql16 = "select * from customer";
+    con.query(sql16,function(err,result){
+      if(err){
+        console.log(err);
+      }
+      else{
+      customers = result;
+      }
+    });
     var sql9 = "select * from admin where login_id="+"\""+ans+"\"";
     con.query(sql9,function(err, result){
        if(err){
          console.log(err);
        }
        var admin = result[0];
-       res.render("admin");
+       res.render("admin",{admin: admin,customers: customers});
      });
   }
   else if(id.includes("customer",0)){
     let ans = id.substring(8);
+    var sql23 = "select * from bill";
+    con.query(sql23,function(err,result){
+      if(err){
+        console.log(err);
+      }
+      else{
+      bills = result;
+      }
+    });
     let sql10 = "select * from customer where mobile_no="+"\""+ans+"\"";
     con.query(sql10,function(err, result){
        if(err){
          console.log(err);
        }
-       var customer = result[0];
-       res.render("customer",{customer:customer});
+       else{
+         var customer = result[0];
+         res.render("customer",{customer:customer,bills:bills});
+       }
      });
   }
   else if(id.includes("cust",0)){
@@ -170,6 +296,122 @@ app.get("/:topic",function(req, res){
        var customer = result[0];
        res.render("customerprofile",{customer:customer});
      });
+  }
+  else if(id.includes("feed",0)){
+    var ans = id.substring(4);
+    var sql13 = "select * from customer where mobile_no="+"\""+ans+"\"";
+    con.query(sql13,function(err, result){
+       if(err){
+         console.log(err);
+       }
+       var customer = result[0];
+       res.render("feedback",{customer:customer});
+     });
+  }
+  else if(id.includes("reset",0)){
+    var ans = id.substring(5);
+    var sql13 = "select * from customer where mobile_no="+"\""+ans+"\"";
+    con.query(sql13,function(err, result){
+       if(err){
+         console.log(err);
+       }
+       var customer = result[0];
+       res.render("resetpass",{customer:customer});
+     });
+  }
+  else if(id.includes("adm",0)){
+    var ans = id.substring(3);
+    var sql17 = "select * from admin where login_id="+"\""+ans+"\"";
+    con.query(sql17,function(err, result){
+       if(err){
+         console.log(err);
+       }
+       var admin = result[0];
+       res.render("adminprofile",{admin:admin});
+     });
+  }
+  else if(id.includes("change",0)){
+    var ans = id.substring(6);
+    var sql16 = "select * from customer";
+    con.query(sql16,function(err,result){
+      if(err){
+        console.log(err);
+      }
+      else{
+      customers = result;
+      }
+    });
+
+    var sql19 = "select * from admin";
+    con.query(sql19,function(err,result){
+      if(err){
+        console.log(err);
+      }
+      else{
+      admins = result;
+      }
+    });
+    var sql22 = "select * from bill";
+    con.query(sql22,function(err,result){
+      if(err){
+        console.log(err);
+      }
+      else{
+        bills = result;
+        res.render("admcustchange",{customers:customers,admins:admins, ans:ans,bills:bills});
+      }
+    });
+  }
+  else if(id.includes("all",0)){
+    var ans = id.substring(3);
+    var sql19 = "select * from admin";
+    con.query(sql19,function(err,result){
+      if(err){
+        console.log(err);
+      }
+      else{
+      admins = result;
+      }
+    });
+    var sql19 = "select * from feedback";
+    con.query(sql19,function(err, result){
+       if(err){
+         console.log(err);
+       }
+       var feedbacks = result;
+       res.render("allfeed",{feedbacks:feedbacks, admins:admins, ans:ans});
+     });
+  }
+  else if(id.includes("lastpayment",0)){
+    var ans =id.substring(11);
+    var sql25 = "select * from customer where mobile_no="+"\""+ans+"\"";
+    con.query(sql25,function(err,result){
+      if(err){
+        console.log(err);
+      }
+      else{
+        var customer = result[0];
+        var cust_id = result[0].cust_id;
+        var sql26 = "update bill set unit_used = "+0+", current_bill = "+0+", bill_due = "+0+", total_bill = "+0+" where bill.cust_id = "+cust_id;
+        con.query(sql26,function(err,result){
+          if(err){
+            console.log(err);
+          }
+          else{
+            var sql27 = "select * from bill";
+            con.query(sql27,function(err,result){
+              if(err){
+                console.log(err);
+              }
+              else{
+                bills = result;
+                res.render("customer",{customer:customer,bills:bills});
+              }
+            });
+          }
+        });
+      }
+    });
   }
 });
 

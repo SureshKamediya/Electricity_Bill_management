@@ -1,6 +1,9 @@
 
 body {
-  background-color: #E8ECEF;
+  background-image:url("/images/backgound.jpg");
+  background-position: center;
+  background-attachment: fixed;
+
 }
 
 .centered {
@@ -8,13 +11,66 @@ body {
     text-align: center;
 }
 
-.secret-text {
-  text-align: center;
-  font-size: 2rem;
-  color: #fff;
-  background-color: #000;
+.colour{
+  color: #f2a154;
+}
+
+.colour2{
+  background-color:#98ded9;
 }
 
 .gap{
   margin-top: 50px;
+}
+
+.box1{
+  margin-top: 100px;
+  margin-left: 200px;
+  float: left;
+}
+
+.box2{
+  margin-top: 100px;
+  margin-right: 250px;
+  float: right;
+}
+
+.box3{
+  margin-top: 100px;
+  margin-left: 200px;
+  float: left;
+}
+
+
+
+
+.cardb {
+  border-radius: 25px;
+  margin: 100px 130px;
+  background-color: #4a3933;
+  width: 400px;
+  box-shadow: 0 2px 5px #ffcb91;
+  text-align: left;
+  float:left;
+}
+
+.box4{
+  margin-left:620px;
+  float: left;
+}
+
+.bdrad{
+  border-radius: 50%;
+}
+
+.cardbb {
+  border-radius: 25px;
+  padding: 25px 15px;
+  background-color: #4a3933;
+  margin: 50px 50px;
+  width: 400px;
+  height: 200px;
+  box-shadow: 0 2px 5px #ffcb91;
+  text-align: left;
+  float:left;
 }

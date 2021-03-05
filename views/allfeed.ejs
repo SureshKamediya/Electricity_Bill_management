@@ -1,36 +1,46 @@
 <%- include('header') %>
 
+<% admins.forEach(tocheck); %>
+
+<% var pos=0,i=0 %>
+<% function tocheck(admin){%>
+  <% if(admin.login_id == ans){%>
+      <%  pos=i; %>
+  <% }%>
+  <% i++ %>
+<% } %>
+
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
   <a class="navbar-brand" href="#">
       <img src="/docs/4.0/assets/brand/bootstrap-logo.svg" alt="" width="30" height="24" class="d-inline-block align-top">
-      <%=admin.admin_id%>
+      <%=admins[pos].admin_id%>
   </a>
   <div class="collapse navbar-collapse justify-content-end" id="navbarNav" >
     <ul class="nav justify-content-center>
       <li class="nav-item">
         <script>
-          var val = <%=admin.login_id%>;
+          var val = <%=admins[pos].login_id%>;
           var loc="/admin"+val;
           document.write('<a class="nav-link" href="' + loc + '">Home</a>');
         </script>
       </li>
       <li class="nav-item">
         <script>
-          var val = <%=admin.login_id%>;
+          var val = <%=admins[pos].login_id%>;
           var loc="/adm"+val;
           document.write('<a class="nav-link" href="' + loc + '">My Profile</a>');
         </script>
       </li>
       <li class="nav-item">
         <script>
-          var val = <%=admin.login_id%>;
+          var val = <%=admins[pos].login_id%>;
           var loc="/all"+val;
           document.write('<a class="nav-link" href="' + loc + '">All Feedbacks</a>');
         </script>
       </li>
       <li class="nav-item">
         <script>
-          var val = <%=admin.login_id%>;
+          var val = <%=admins[pos].login_id%>;
           var loc="/change"+val;
           document.write('<a class="nav-link" href="' + loc + '">All bills</a>');
         </script>
@@ -44,20 +54,20 @@
 </nav>
 
 
-  <% function myfunction(customer){%>
+  <% function myfunction(feedback){%>
     <div class="card cardbb text-white mb-3" style="max-width: 18rem;">
-      <div class="card-header"><%=customer.cust_name%></div>
+      <div class="card-header">Feedback Id: <%=feedback.feedback_id%></div>
         <div class="card-body">
-          <p class="card-title"><%=customer.mobile_no%></h5>
-          <p class="card-text"><%=customer.email_id%></p>
+          <p class="card-title">Customer Id: <%=feedback.cust_id%></h5>
+          <p class="card-text">Feedback: <%=feedback.feedback%></p>
         </div>
       </div>
     </div>
   <% } %>
 
 <div>
-  <h1 class="centered colour">All customers</h1>
-  <% customers.forEach(myfunction);%>
+  <h1 class="centered colour">All feedbacks</h1>
+  <% feedbacks.forEach(myfunction);%>
 </div>
 
 

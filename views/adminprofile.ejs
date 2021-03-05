@@ -43,22 +43,38 @@
   </div>
 </nav>
 
-
-  <% function myfunction(customer){%>
-    <div class="card cardbb text-white mb-3" style="max-width: 18rem;">
-      <div class="card-header"><%=customer.cust_name%></div>
-        <div class="card-body">
-          <p class="card-title"><%=customer.mobile_no%></h5>
-          <p class="card-text"><%=customer.email_id%></p>
+<div class="centered">
+  <div class="container">
+    <h1 class="colour"><strong><%=admin.admin_name%></strong></h1>
+    <div class="row g-2">
+      <div class="col-6">
+        <div class="p-3 border colour2">
+          <h5> Admin Id</h5>
+          <p><%=admin.admin_id%></p>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="p-3 border colour2">
+          <h5>Mobile No</h5>
+          <p><%=admin.login_id%></p>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="p-3 border colour2">
+          <h5>Email</h5>
+          <p><%=admin.email_id%></p>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="p-3 border colour2">
+          <h5>Password</h5>
+          <p><%=admin.password%></p>
         </div>
       </div>
     </div>
-  <% } %>
-
-<div>
-  <h1 class="centered colour">All customers</h1>
-  <% customers.forEach(myfunction);%>
+  </div>
 </div>
+
 
 
 <!-- <div class="card text-white bg-secondary mb-3 box4 text-center" style="max-width: 20rem;">
