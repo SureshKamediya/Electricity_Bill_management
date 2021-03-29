@@ -67,10 +67,26 @@ body {
   border-radius: 25px;
   padding: 25px 15px;
   background-color: #4a3933;
-  margin: 50px 50px;
+  margin: 50px 100px;
   width: 400px;
   height: 200px;
   box-shadow: 0 2px 5px #ffcb91;
   text-align: left;
   float:left;
+}
+
+/* .cardbd{
+  border-radius: 25px;
+  padding: 25px 15px;
+  background-color: #4a3933;
+  margin: 50px 100px;
+  width: 400px;
+  height: 250px;
+  box-shadow: 0 2px 5px #ffcb91;
+  text-align: left;
+  float:left
+} */
+
+.ngap{
+  margin:10px 10px;
 }

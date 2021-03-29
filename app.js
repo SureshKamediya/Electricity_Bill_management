@@ -20,7 +20,7 @@ app.use(express.static("public"));
 
 var customers = [];
 var admins = [];
-var bills = [];
+var invoices = [];
 
 
 con.connect(function(err){
@@ -59,6 +59,7 @@ app.post("/register", function(req,res){
   var sql7 = "insert into customer (cust_name, account_type, address, state, city, pincode, email_id, mobile_no, password, status) values("+"\""+req.body.name+"\", \"regular\", \""+req.body.address+"\", \""+req.body.state+"\", \""+req.body.city+"\", \""+req.body.pincode+"\", \""+req.body.email+"\", \""+req.body.mobile+"\", \""+req.body.password+"\", \"Activated\")";
   con.query(sql7,function(err,result){
     if(err){
+      res.send("There already exits an account with this mobile number.");
       console.log(err);
     }
     else{
@@ -70,7 +71,10 @@ app.post("/register", function(req,res){
         }
         else{
           customer_id= result3[0].cust_id;
-          var sql20 = "insert into bill (cust_id, unit_used, current_bill, bill_due, total_bill) values("+customer_id+", 0, 0, 0, 0)";
+          let today = new Date().toISOString().slice(0, 10);
+          let time  = new Date().toTimeString().slice(0,8);
+          let nettime = today+ " "+time;
+          var sql20 = "insert into invoice (cust_id, reading_time, present_reading, previous_reading, consumption_unit, rate, current_bill, fine, prev_bill, fine_prev_balance, total_balance) values("+customer_id+", \""+nettime+"\", 0, 0, 0, 0.06, 0, 0.1, 0, 0, 0)";
           con.query(sql20, function(err,result2){
             if(err){
               console.log(err);
@@ -193,13 +197,42 @@ app.post("/resetpass",function(req,res){
    }
 });
 
+function dateDiffInDays(t1,t2){
+    var one_day=1000*60*60*24;
+
+    var x=t1.split("-");
+    var y=t2.split("-");
+
+    var date1=new Date(x[0],(x[1]-1),x[2]);
+    var date2=new Date(y[0],(y[1]-1),y[2]);
+
+    _Diff=Math.ceil((date2.getTime()-date1.getTime())/(one_day));
+    return _Diff;
+
+}
+
+
 app.post("/admcustchange",function(req,res){
   let cust_id = req.body.cust_id;
-  let unit_used = req.body.unit_used;
+  let consumption_unit = req.body.consumption_unit;
+  let invoice_id = req.body.invoice_id;
+  let rate = req.body.rate;
+  let present_reading = req.body.present_reading;
   let current_bill = req.body.current_bill;
-  let bill_due = req.body.bill_due;
-  let total_bill= req.body.total_bill;
-  var sql22 = "update bill set unit_used = "+unit_used+", current_bill = "+current_bill+", bill_due = "+bill_due+", total_bill = "+total_bill+" where bill.cust_id = "+cust_id;
+  let prev_bill = Number(req.body.prev_bill);
+  let ptime = req.body.time;
+  let fine = req.body.fine;
+  let previous_reading = Number(present_reading);
+  prev_bill = Number(current_bill) + prev_bill;
+  present_reading = previous_reading+ Number(consumption_unit);
+  current_bill = Number(consumption_unit)*Number(rate);
+  let today = new Date().toISOString().slice(0, 10);
+  let time  = new Date().toTimeString().slice(0,8);
+  let nettime = today+ " "+time;
+  let ans = dateDiffInDays(ptime.slice(0,10), today);
+  let fine_prev_balance = prev_bill * (1+Number(fine));
+  let total_balance = fine_prev_balance+current_bill;
+  var sql22 = "update invoice set reading_time = \""+nettime+"\", consumption_unit = "+consumption_unit+", previous_reading = "+previous_reading+", present_reading = "+present_reading+",prev_bill = "+prev_bill+", current_bill = "+current_bill+",fine_prev_balance= "+fine_prev_balance+", total_balance = "+total_balance+" where invoice.cust_id = "+cust_id;
   con.query(sql22,function(err,result){
     if(err){
       console.log(err);
@@ -211,50 +244,72 @@ app.post("/admcustchange",function(req,res){
   });
 });
 
-var sql16 = "select * from customer";
-con.query(sql16,function(err,result){
-  if(err){
-    console.log(err);
-  }
-  else{
-  customers = result;
-  }
+app.post("/checkout",function(req,res){
+  let invoice_id = req.body.invoice_id;
+  let cust_id = req.body.cust_id;
+  let price_paid = req.body.price_paid;
+  let total_bill = req.body.total_bill;
+  let remaining_amount = total_bill - price_paid;
+  let today = new Date().toISOString().slice(0, 10);
+  let time  = new Date().toTimeString().slice(0,8);
+  let nettime = today+ " "+time;
+  let sql = "update invoice set consumption_unit = 0, current_bill = 0, prev_bill="+ remaining_amount+", fine_prev_balance ="+ remaining_amount+", total_balance ="+ remaining_amount+ " where cust_id = "+cust_id;
+  con.query(sql,function(err,result){
+    if(err){
+      console.log(err);
+    }
+    else{
+      let str ="customer"+req.body.mobile;
+      res.redirect(str);
+    }
+  });
 });
 
-var sql19 = "select * from admin";
-con.query(sql19,function(err,result){
-  if(err){
-    console.log(err);
-  }
-  else{
-  admins = result;
-  }
-});
 
-var sql21 = "select * from bill";
-con.query(sql21,function(err,result){
-  if(err){
-    console.log(err);
-  }
-  else{
-  bills = result;
-  }
-});
+function customerdetails(){
+  let sql = "select * from customer";
+  con.query(sql,function(err,result){
+    if(err){
+      console.log(err);
+    }
+    else{
+    customers = result;
+    }
+  });
+}
+
+function admindetails(){
+  let sql = "select * from admin";
+  con.query(sql,function(err,result){
+    if(err){
+      console.log(err);
+    }
+    else{
+    admins = result;
+    }
+  });
+}
+
+function invoicedetails(){
+  let sql = "select * from invoice";
+  con.query(sql,function(err,result){
+    if(err){
+      console.log(err);
+    }
+    else{
+    invoices = result;
+    }
+  });
+}
+
+
 
 
 app.get("/:topic",function(req, res){
   const id = req.params.topic;
   if(id.includes("admin",0)){
     var ans = id.substring(5);
-    var sql16 = "select * from customer";
-    con.query(sql16,function(err,result){
-      if(err){
-        console.log(err);
-      }
-      else{
-      customers = result;
-      }
-    });
+    customerdetails();
     var sql9 = "select * from admin where login_id="+"\""+ans+"\"";
     con.query(sql9,function(err, result){
        if(err){
@@ -267,14 +322,7 @@ app.get("/:topic",function(req, res){
   else if(id.includes("customer",0)){
     let ans = id.substring(8);
     var sql23 = "select * from bill";
-    con.query(sql23,function(err,result){
-      if(err){
-        console.log(err);
-      }
-      else{
-      bills = result;
-      }
-    });
+    invoicedetails();
     let sql10 = "select * from customer where mobile_no="+"\""+ans+"\"";
     con.query(sql10,function(err, result){
        if(err){
@@ -282,7 +330,7 @@ app.get("/:topic",function(req, res){
        }
        else{
          var customer = result[0];
-         res.render("customer",{customer:customer,bills:bills});
+         res.render("customer",{customer:customer,invoices:invoices});
        }
      });
   }
@@ -332,49 +380,24 @@ app.get("/:topic",function(req, res){
   }
   else if(id.includes("change",0)){
     var ans = id.substring(6);
-    var sql16 = "select * from customer";
-    con.query(sql16,function(err,result){
-      if(err){
-        console.log(err);
-      }
-      else{
-      customers = result;
-      }
-    });
-
-    var sql19 = "select * from admin";
-    con.query(sql19,function(err,result){
-      if(err){
-        console.log(err);
-      }
-      else{
-      admins = result;
-      }
-    });
-    var sql22 = "select * from bill";
+    customerdetails();
+    admindetails();
+    var sql22 = "select * from invoice";
     con.query(sql22,function(err,result){
       if(err){
         console.log(err);
       }
       else{
-        bills = result;
-        res.render("admcustchange",{customers:customers,admins:admins, ans:ans,bills:bills});
+        invoices = result;
+        res.render("admcustchange",{customers:customers,admins:admins, ans:ans,invoices:invoices});
       }
     });
   }
   else if(id.includes("all",0)){
     var ans = id.substring(3);
-    var sql19 = "select * from admin";
-    con.query(sql19,function(err,result){
-      if(err){
-        console.log(err);
-      }
-      else{
-      admins = result;
-      }
-    });
-    var sql19 = "select * from feedback";
-    con.query(sql19,function(err, result){
+    admindetails();
+    let sql20 = "select * from feedback";
+    con.query(sql20,function(err, result){
        if(err){
          console.log(err);
        }
@@ -382,34 +405,53 @@ app.get("/:topic",function(req, res){
        res.render("allfeed",{feedbacks:feedbacks, admins:admins, ans:ans});
      });
   }
-  else if(id.includes("lastpayment",0)){
-    var ans =id.substring(11);
+  else if(id.includes("checkout",0)){
+    var ans =id.substring(8);
     var sql25 = "select * from customer where mobile_no="+"\""+ans+"\"";
     con.query(sql25,function(err,result){
       if(err){
         console.log(err);
       }
       else{
+        invoicedetails();
         var customer = result[0];
-        var cust_id = result[0].cust_id;
-        var sql26 = "update bill set unit_used = "+0+", current_bill = "+0+", bill_due = "+0+", total_bill = "+0+" where bill.cust_id = "+cust_id;
-        con.query(sql26,function(err,result){
-          if(err){
-            console.log(err);
-          }
-          else{
-            var sql27 = "select * from bill";
-            con.query(sql27,function(err,result){
-              if(err){
-                console.log(err);
-              }
-              else{
-                bills = result;
-                res.render("customer",{customer:customer,bills:bills});
-              }
-            });
-          }
-        });
+        res.render("checkout",{customer:customer, invoices:invoices});
+      }
+    });
+  }
+  else if(id.includes("read",0)){
+    var ans = id.substring(4);
+    var val = Number(ans);
+
+    let sql27 = "select * from feedback where feedback_id = "+ val;
+    con.query(sql27, function(err, result){
+      if(err){
+        console.log(err);
+      }
+      else{
+        var feedback = result[0];
+        res.render("readfeed",{feedback:feedback});
+      }
+    })
+  }
+  else if(id.includes("deletefd",0)){
+    var ans = id.substring(8);
+    var val = Number(ans);
+    let sql26 = "delete from feedback where feedback_id = "+ val;
+    con.query(sql26,function(err,result){
+      if(err){
+        console.log(err);
+      }
+      else{
+        admindetails();
+        let sql20 = "select * from feedback";
+        con.query(sql20,function(err, result){
+           if(err){
+             console.log(err);
+           }
+           var feedbacks = result;
+           res.render("allfeed",{feedbacks:feedbacks, admins:admins, ans:ans});
+         });
       }
     });
   }

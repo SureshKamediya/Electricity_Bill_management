@@ -47,7 +47,7 @@
       </li>
 
       <li class="nav-item">
-        <a class="nav-link active" aria-current="page" href="/loginadmin">Log Out</a>
+        <a class="nav-link active" aria-current="page" href="/">Log Out</a>
       </li>
     </ul>
   </div>
@@ -57,32 +57,39 @@
   <% function myfunction(customer){%>
     <form action="/admcustchange" method="POST">
       <% var pos=0,j=0 %>
-      <% function tocheck2(bill){%>
-        <% if(bill.cust_id == customer.cust_id){%>
+      <% function tocheck2(invoice){%>
+        <% if(invoice.cust_id == customer.cust_id){%>
             <%  pos=j; %>
         <% }%>
         <% j=j+1; %>
       <% }; %>
-      <% bills.forEach(tocheck2); %>
+      <% invoices.forEach(tocheck2); %>
       <input type="hidden" name="cust_id" value="<%=customer.cust_id%>">
       <input type="hidden" name="mobile" value="<%=admins[pos1].login_id%>">
+      <input type="hidden" name="invoice_id" value="<%=invoices[pos].invoice_id%>">
+      <input type="hidden" name="present_reading" value="<%=invoices[pos].present_reading%>">
+      <input type="hidden" name="prev_bill" value="<%=invoices[pos].prev_bill%>">
+      <input type="hidden" name="current_bill" value="<%=invoices[pos].current_bill%>">
+      <input type="hidden" name="rate" value="<%=invoices[pos].rate%>">
+      <input type="hidden" name="fine" value="<%=invoices[pos].fine%>">
+      <input type="hidden" name="time" value="<%=invoices[pos].reading_time%>">
        <tr>
         <th scope="row"><%=customer.cust_id%></th>
         <td>
-          <label for="unit_used"><%=bills[pos].unit_used%></label>
-          <input type="text"  name="unit_used" required >
+          <label for="unit_used"><%=invoices[pos].consumption_unit%></label>
+          <input type="text" name="consumption_unit" required >
         </td>
         <td>
-          <label for="current_bill"><%=bills[pos].current_bill%></label>
-          <input type="text"  name="current_bill" required >
+          <label for="unit_used"><%=invoices[pos].present_reading%></label>
         </td>
         <td>
-          <label for="bill_due"><%=bills[pos].bill_due%></label>
-          <input type="text"  name="bill_due" required >
+            <label for="current_bill"><%=invoices[pos].current_bill%></label>
         </td>
         <td>
-          <label for="total_bill"><%=bills[pos].total_bill%></label>
-          <input type="text"  name="total_bill" required >
+          <label for="bill_due"><%=invoices[pos].fine_prev_balance%></label>
+        </td>
+        <td>
+          <label for="total_bill"><%=invoices[pos].total_balance%></label>
         </td>
         <td>
           <button type="submit" class="btn btn-primary">Change</button>
@@ -98,11 +105,11 @@
     <thead class="thead-dark">
       <tr>
         <th scope="col">Customer Id</th>
-        <th scope="col">Unit Used</th>
+        <th scope="col">Consumption unit</th>
+        <th scope="col">Current Reading</th>
         <th scope="col">Current Bill</th>
-        <th scope="col">Bill Due</th>
+        <th scope="col">Bill with Fine</th>
         <th scope="col">Total Bill</th>
-        <th scope="col"></th>
       </tr>
     </thead>
     <tbody>

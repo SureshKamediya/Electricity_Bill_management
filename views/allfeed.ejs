@@ -47,7 +47,7 @@
       </li>
 
       <li class="nav-item">
-        <a class="nav-link active" aria-current="page" href="/loginadmin">Log Out</a>
+        <a class="nav-link active" aria-current="page" href="/">Log Out</a>
       </li>
     </ul>
   </div>
@@ -58,10 +58,15 @@
     <div class="card cardbb text-white mb-3" style="max-width: 18rem;">
       <div class="card-header">Feedback Id: <%=feedback.feedback_id%></div>
         <div class="card-body">
-          <p class="card-title">Customer Id: <%=feedback.cust_id%></h5>
-          <p class="card-text">Feedback: <%=feedback.feedback%></p>
+          <p class="card-title">Customer Id: <%=feedback.cust_id%></h5></br>
+          <script>
+            var val = <%=feedback.feedback_id%>;
+            var loc="/read"+val;
+            document.write('<a class="btn btn-primary ngap" href="' + loc + '">Feedback</a>');
+            var loc2="/deletefd"+val;
+            document.write('<a class="btn btn-primary ngap" href="' + loc2 + '">Delete</a>');
+          </script>
         </div>
-      </div>
     </div>
   <% } %>
 
