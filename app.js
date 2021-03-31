@@ -2,6 +2,8 @@ const express = require("express");
 const bodyParser = require("body-parser");
 var mysql = require("mysql");
 var JSAlert = require("js-alert");
+const bcrypt = require("bcrypt");
+const saltRounds =10;
 
 var con = mysql.createConnection({
   host: "localhost",
@@ -56,42 +58,44 @@ app.post("/",function(req, res){
 
 app.post("/register", function(req,res){
   let username = req.body.mobile;
-  var sql7 = "insert into customer (cust_name, account_type, address, state, city, pincode, email_id, mobile_no, password, status) values("+"\""+req.body.name+"\", \"regular\", \""+req.body.address+"\", \""+req.body.state+"\", \""+req.body.city+"\", \""+req.body.pincode+"\", \""+req.body.email+"\", \""+req.body.mobile+"\", \""+req.body.password+"\", \"Activated\")";
-  con.query(sql7,function(err,result){
-    if(err){
-      res.send("There already exits an account with this mobile number.");
-      console.log(err);
-    }
-    else{
-      var customer_id = 0;
-      var sql23 ="select * from customer where mobile_no = \""+username+"\"";
-      con.query(sql23,function(err,result3){
-        if(err){
-          console.log(err);
-        }
-        else{
-          customer_id= result3[0].cust_id;
-          let today = new Date().toISOString().slice(0, 10);
-          let time  = new Date().toTimeString().slice(0,8);
-          let nettime = today+ " "+time;
-          var sql20 = "insert into invoice (cust_id, reading_time, present_reading, previous_reading, consumption_unit, rate, current_bill, fine, prev_bill, fine_prev_balance, total_balance) values("+customer_id+", \""+nettime+"\", 0, 0, 0, 0.06, 0, 0.1, 0, 0, 0)";
-          con.query(sql20, function(err,result2){
-            if(err){
-              console.log(err);
-            }
-          });
-          let str = "customer"+ username;
-          res.redirect(str);
-        }
-      });
-    }
+  bcrypt.hash(req.body.password, saltRounds, function(err, hash){
+    var sql7 = "insert into customer (cust_name, account_type, address, state, city, pincode, email_id, mobile_no, password, status) values("+"\""+req.body.name+"\", \"regular\", \""+req.body.address+"\", \""+req.body.state+"\", \""+req.body.city+"\", \""+req.body.pincode+"\", \""+req.body.email+"\", \""+req.body.mobile+"\", \""+hash+"\", \"Activated\")";
+    con.query(sql7,function(err,result){
+      if(err){
+        res.send("There already exits an account with this mobile number.");
+        console.log(err);
+      }
+      else{
+        var customer_id = 0;
+        var sql23 ="select * from customer where mobile_no = \""+username+"\"";
+        con.query(sql23,function(err,result3){
+          if(err){
+            console.log(err);
+          }
+          else{
+            customer_id= result3[0].cust_id;
+            let today = new Date().toISOString().slice(0, 10);
+            let time  = new Date().toTimeString().slice(0,8);
+            let nettime = today+ " "+time;
+            var sql20 = "insert into invoice (cust_id, reading_time, present_reading, previous_reading, consumption_unit, rate, current_bill, fine, prev_bill, fine_prev_balance, total_balance) values("+customer_id+", \""+nettime+"\", 0, 0, 0, 0.06, 0, 0.1, 0, 0, 0)";
+            con.query(sql20, function(err,result2){
+              if(err){
+                console.log(err);
+              }
+            });
+            let str = "customer"+ username;
+            res.redirect(str);
+          }
+        });
+      }
+    });
   });
 });
 
 app.post("/logincustomer", function(req,res){
   let username = req.body.mobile;
   let pass = req.body.password;
-  var sql11 = "select count(*) as count from customer where mobile_no = "+"\"" + username+"\"";
+  let sql11 = "select count(*) as count from customer where mobile_no = "+"\"" + username+"\"";
   con.query(sql11,function(err, result){
     if(err){
        console.log(err);
@@ -102,20 +106,21 @@ app.post("/logincustomer", function(req,res){
          res.send("Invalild Username");
        }
        else{
-         var sql12 = "select count(*) as count2 from customer where password ="+"\""+pass+ "\""+ "and mobile_no="+"\""+username+"\"";
+         let sql12 = "select password  from customer where mobile_no="+"\""+username+"\"";
          con.query(sql12,function(err, result){
            if(err){
               console.log(err);
             }
             else{
-              let pw = result[0].count2;
-              if(pw==0){
-                res.send("Wrong password");
-               }
-              else{
-                let str = "customer"+username;
-                res.redirect(str);
-              }
+              bcrypt.compare(pass, result[0].password, function(err, result) {
+                if(result === true){
+                  let str = "customer"+username;
+                  res.redirect(str);
+                 }
+                else{
+                  res.send("Wrong password");
+                }
+              });
             }
           });
        }
